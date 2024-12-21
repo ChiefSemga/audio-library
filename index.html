@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audiobook Library</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Audiobook Library</h1>
+    <h2>Upload Audiobook</h2>
+    <form id="uploadForm">
+        <input type="text" id="title" placeholder="Title" required>
+        <input type="text" id="author" placeholder="Author" required>
+        <input type="file" id="audioFile" accept="audio/*" required>
+        <button type="submit">Upload</button>
+    </form>
+    <h2>Audiobook List</h2>
+    <ul id="audiobookList"></ul>
+
+    <script>
+        const apiUrl = 'YOUR_API_GATEWAY_URL';
+        const s3BucketUrl = 'YOUR_S3_BUCKET_URL';
+
+        async function uploadAudiobook(event) {
+            event.preventDefault();
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const file = document.getElementById('audioFile').files[0];
+            
+            // Upload file to S3
+            const fileName = `${Date.now()}-${file.name}`;
+            const response = await fetch(`${s3BucketUrl}/${fileName}`, {
+                method: 'PUT',
+                body: file
+            });
+
+            if (response.ok) {
+                // Save audiobook metadata to database
+                await axios.post(apiUrl, {
+                    title,
+                    author,
+                    file_path: fileName
+                });
+                loadAudiobooks();
+            }
+        }
+
+        async function loadAudiobooks() {
+            const response = await axios.get(apiUrl);
+            const audiobookList = document.getElementById('audiobookList');
+            audiobookList.innerHTML = '';
+            response.data.forEach(book => {
+                const li = document.createElement('li');
+                li.textContent = `${book.title} by ${book.author}`;
+                audiobookList.appendChild(li);
+            });
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', uploadAudiobook);
+        loadAudiobooks();
+    </script>
+</body>
+</html>
+
