@@ -43,7 +43,7 @@ Ensure you have the following installed and configured:
 ## Installation
 
 1. Clone the repository:
-git clone https://github.com/yourusername/audiobook-library.git
+git clone https://github.com/ChiefSemga/audio-library.git
 cd audiobook-library
 text
 
